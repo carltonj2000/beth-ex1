@@ -1,5 +1,5 @@
 import { html } from "@elysiajs/html";
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import * as elements from "typed-html";
 
 const app = new Elysia()
@@ -18,6 +18,17 @@ const app = new Elysia()
   )
   .post("/clicked", () => <div>I'm from the server</div>)
   .get("/todos", () => <TodoList todos={db} />)
+  .post(
+    "/todos/toggle/:id",
+    ({ params }) => {
+      const todo = db.find((todo) => todo.id === params.id);
+      if (todo) {
+        todo.completed = !todo?.completed;
+        return <TodoItem {...todo} />;
+      }
+    },
+    { params: t.Object({ id: t.Numeric() }) }
+  )
   .listen(3000);
 
 console.log(
@@ -53,7 +64,13 @@ function TodoItem({ content, completed, id }: TodoT) {
   return (
     <div class="flex flex-row space-x-3">
       <p>{content}</p>
-      <input type="checkbox" checked={completed} />
+      <input
+        type="checkbox"
+        checked={completed}
+        hx-post={`/todos/toggle/${id}`}
+        hx-target="closest div"
+        hx-swap="outerHTML"
+      />
       <button class="text-red-500">X</button>
     </div>
   );

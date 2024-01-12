@@ -2,7 +2,7 @@
 
 Fullstack dev with
 
-- B un : runner and packager
+- B un : javascript runner and packager
 - E lysia : web server framework
 - T urso: db
 - H TMX : front end framework
