@@ -5,11 +5,12 @@ Fullstack dev with
 - B un : javascript runner and packager
 - E lysia : web server framework
 - T urso: db
-- H TMX : front end framework
+- H TMX : front end framework. And HyperScript companion
 
 ```bash
 bun run --watch --hot index.tsx
 bunx drizzle-kit push:sqlite
+bunx tailwindcss -i ./src/input.css -o ./src/tyles.css --watch
 ```
 
 ## Code History

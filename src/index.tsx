@@ -75,6 +75,7 @@ const BaseHtml = ({ children }: elements.Children) => `
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CJ's Beth Stack</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
     <link rel="stylesheet" href="/styles.css">
 </head>
 ${children}
@@ -119,7 +120,12 @@ function TodoList({ todos }: { todos: TodoT[] }) {
 
 function TodoForm() {
   return (
-    <form class="flex flex-row space-x-3" hx-post="todos" hx-swap="beforebegin">
+    <form
+      class="flex flex-row space-x-3"
+      hx-post="todos"
+      hx-swap="beforebegin"
+      _="on submit target.reset()"
+    >
       <input type="text" name="content" class="border border-black" />
       <button type="submit">Add</button>
     </form>
