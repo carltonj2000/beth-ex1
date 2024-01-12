@@ -1,7 +1,7 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const todosS = sqliteTable("todos", {
+export const todosTbl = sqliteTable("todos", {
   id: integer("id", { mode: "number" })
     .primaryKey({ autoIncrement: true })
     .unique(),

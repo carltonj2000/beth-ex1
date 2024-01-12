@@ -45,3 +45,11 @@ bun add -d drizzle-kit
 bunx drizzle-kit push:sqlite
 bunx drizzle-kit studio
 ```
+
+Tailwind CSS CLI setup.
+
+```bash
+bun install -d tailwindcss
+bunx tailwindcss init
+bunx tailwindcss -i ./src/input.css -o ./src/tyles.css --watch
+```

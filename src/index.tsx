@@ -1,6 +1,9 @@
 import { html } from "@elysiajs/html";
+import { eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import * as elements from "typed-html";
+import { db } from "./db";
+import { todosTbl } from "./db/schema";
 
 const app = new Elysia()
   .use(html())
@@ -17,40 +20,47 @@ const app = new Elysia()
     )
   )
   .post("/clicked", () => <div>I'm from the server</div>)
-  .get("/todos", () => <TodoList todos={db} />)
+  .get("/todos", async () => {
+    const data = await db.select().from(todosTbl).all();
+    return <TodoList todos={data} />;
+  })
   .post(
     "/todos/toggle/:id",
-    ({ params }) => {
-      const todo = db.find((todo) => todo.id === params.id);
-      if (todo) {
-        todo.completed = !todo?.completed;
-        return <TodoItem {...todo} />;
-      }
+    async ({ params }) => {
+      const oldTodo = await db
+        .select()
+        .from(todosTbl)
+        .where(eq(todosTbl.id, params.id))
+        .get();
+      const newTodo = await db
+        .update(todosTbl)
+        .set({ completed: !oldTodo?.completed })
+        .where(eq(todosTbl.id, params.id))
+        .returning()
+        .get();
+      return <TodoItem {...newTodo} />;
     },
     { params: t.Object({ id: t.Numeric() }) }
   )
   .delete(
     "/todos/:id",
-    ({ params }) => {
-      const todo = db.find((todo) => todo.id === params.id);
-      if (todo) {
-        db.splice(db.indexOf(todo), 1);
-      }
+    async ({ params }) => {
+      await db.delete(todosTbl).where(eq(todosTbl.id, params.id)).run();
     },
     { params: t.Object({ id: t.Numeric() }) }
   )
   .post(
     "/todos",
-    ({ body }) => {
+    async ({ body }) => {
       if (body.content.length === 0) {
         throw new Error("Content cannot be empty");
       }
-      const todo = { id: lastID++, content: body.content, completed: false };
-      db.push(todo);
+      const todo = await db.insert(todosTbl).values(body).returning().get();
       return <TodoItem {...todo} />;
     },
     { body: t.Object({ content: t.String() }) }
   )
+  .get("/styles.css", () => Bun.file("./src/styles.css"))
   .listen(3000);
 
 console.log(
@@ -65,22 +75,11 @@ const BaseHtml = ({ children }: elements.Children) => `
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CJ's Beth Stack</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 ${children}
 </html>
 `;
-
-type TodoT = {
-  id: number;
-  content: string;
-  completed: boolean;
-};
-
-const db: TodoT[] = [
-  { id: 1, content: "learn the beth stack", completed: true },
-  { id: 2, content: "learn vim", completed: false },
-];
 
 let lastID = db.length + 1;
 
